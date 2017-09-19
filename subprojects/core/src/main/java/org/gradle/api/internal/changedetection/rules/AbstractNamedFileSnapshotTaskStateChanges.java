@@ -32,6 +32,7 @@ import org.gradle.normalization.internal.InputNormalizationStrategy;
 import org.gradle.util.ChangeListener;
 import org.gradle.util.DiffUtil;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -95,9 +96,9 @@ abstract public class AbstractNamedFileSnapshotTaskStateChanges implements TaskS
         return builder.build();
     }
 
-    protected Iterator<TaskStateChange> getFileChanges(final boolean includeAdded) {
+    protected List<TaskStateChange> getFilePropertiesChange() {
         if (getPrevious() == null) {
-            return Iterators.<TaskStateChange>singletonIterator(new DescriptiveChange(title + " file history is not available."));
+            return Collections.<TaskStateChange>singletonList(new DescriptiveChange(title + " file history is not available."));
         }
         final List<TaskStateChange> propertyChanges = Lists.newLinkedList();
         DiffUtil.diff(getCurrent().keySet(), getPrevious().keySet(), new ChangeListener<String>() {
@@ -117,9 +118,10 @@ abstract public class AbstractNamedFileSnapshotTaskStateChanges implements TaskS
                 throw new AssertionError();
             }
         });
-        if (!propertyChanges.isEmpty()) {
-            return propertyChanges.iterator();
-        }
+        return propertyChanges;
+    }
+
+    protected Iterator<TaskStateChange> getFileChanges(final boolean includeAdded) {
         return Iterators.concat(Iterables.transform(getCurrent().entrySet(), new Function<Map.Entry<String, FileCollectionSnapshot>, Iterator<TaskStateChange>>() {
             @Override
             public Iterator<TaskStateChange> apply(Map.Entry<String, FileCollectionSnapshot> entry) {
@@ -131,4 +133,5 @@ abstract public class AbstractNamedFileSnapshotTaskStateChanges implements TaskS
             }
         }).iterator());
     }
+
 }

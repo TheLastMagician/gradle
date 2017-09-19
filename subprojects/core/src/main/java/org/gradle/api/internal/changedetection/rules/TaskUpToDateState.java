@@ -52,7 +52,6 @@ public class TaskUpToDateState {
         TaskStateChanges noHistoryState = new NoHistoryTaskStateChanges(lastExecution);
         TaskStateChanges previousSuccessState = new PreviousSuccessTaskStateChanges(lastExecution, thisExecution, task);
         TaskStateChanges taskTypeState = new TaskTypeTaskStateChanges(lastExecution, thisExecution, task.getPath(), task.getClass(), task.getTaskActions(), classLoaderHierarchyHasher);
-        TaskStateChanges inputPropertiesState = new InputPropertiesTaskStateChanges(lastExecution, thisExecution, task, valueSnapshotter);
 
         // Capture outputs state
         OutputFilesTaskStateChanges uncachedOutputChanges = new OutputFilesTaskStateChanges(lastExecution, thisExecution, task, fileCollectionSnapshotterRegistry, inputNormalizationStrategy);
@@ -62,7 +61,10 @@ public class TaskUpToDateState {
         // Capture inputs state
         InputFilesTaskStateChanges directInputFileChanges = new InputFilesTaskStateChanges(lastExecution, thisExecution, task, fileCollectionSnapshotterRegistry, inputNormalizationStrategy);
         TaskStateChanges inputFileChanges = caching(directInputFileChanges);
+        TaskStateChanges inputFilePropertiesChanges = caching(directInputFileChanges.filePropertiesChanges());
         this.inputFileChanges = new ErrorHandlingTaskStateChanges(task, inputFileChanges);
+
+        TaskStateChanges inputPropertiesState = new SummaryTaskStateChanges(1, new InputPropertiesTaskStateChanges(lastExecution, thisExecution, task, valueSnapshotter), inputFilePropertiesChanges);
 
         // Capture discovered inputs state from previous execution
         DiscoveredInputsTaskStateChanges discoveredChanges = new DiscoveredInputsTaskStateChanges(lastExecution, thisExecution, fileCollectionSnapshotterRegistry, fileCollectionFactory, task, inputNormalizationStrategy);

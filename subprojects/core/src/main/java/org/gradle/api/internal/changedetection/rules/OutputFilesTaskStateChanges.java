@@ -32,6 +32,7 @@ import org.gradle.normalization.internal.InputNormalizationStrategy;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class OutputFilesTaskStateChanges extends AbstractNamedFileSnapshotTaskStateChanges {
@@ -48,11 +49,19 @@ public class OutputFilesTaskStateChanges extends AbstractNamedFileSnapshotTaskSt
 
     @Override
     public Iterator<TaskStateChange> iterator() {
-        return getFileChanges(false);
+        return iterator(false);
     }
 
     public Iterator<TaskStateChange> iteratorIncludingAdded() {
-        return getFileChanges(true);
+        return iterator(true);
+    }
+
+    private Iterator<TaskStateChange> iterator(boolean includeAdded) {
+        List<TaskStateChange> filePropertiesChanges = getFilePropertiesChange();
+        if (!filePropertiesChanges.isEmpty()) {
+            return filePropertiesChanges.iterator();
+        }
+        return getFileChanges(includeAdded);
     }
 
     @Override
